@@ -1,20 +1,29 @@
-export default function ProjectCard({ title, desc, tags, links }) {
+import { Link } from "react-router-dom";
+
+export default function ProjectCard({ project }) {
   return (
-    <article className="card">
-      <h4 className="cardTitle">{title}</h4>
-      <p className="cardDesc">{desc}</p>
+    <article className="projectCard">
+      <h3>
+        <Link to={`/projects/${project.slug}`}>
+          {project.title}
+        </Link>
+      </h3>
 
-      <div className="tagRow">
-        {tags?.map((t) => (
-          <span key={t} className="tag">{t}</span>
-        ))}
-      </div>
+      <p className="projectSummary">
+        {project.summary}
+      </p>
 
-      <div className="cardLinks">
-        {links?.map((l) => (
-          <a key={l.href} href={l.href}>{l.label}</a>
-        ))}
-      </div>
+      <small className="projectDate">
+        {project.date}
+      </small>
+
+      <p>{project.excerpt}</p>
+
+      <p>
+        <Link to={`/projects/${project.slug}`}>
+          Read more →
+        </Link>
+      </p>
     </article>
   );
 }

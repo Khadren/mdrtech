@@ -1,18 +1,13 @@
+import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import Header from "./Header";
 
-export default function Layout({ children }) {
+export default function Layout() {
   return (
-    <div className="page">
-      {/* Mobile header */}
-      <Header />
-
-      {/* Desktop sidebar */}
-      <aside className="sidebarWrap">
-        <Sidebar />
-      </aside>
-
-      <main className="content">{children}</main>
+    <div className="layout">
+      <Sidebar />
+      <main className="content">
+        <Outlet />
+      </main>
     </div>
   );
 }

@@ -1,9 +1,13 @@
+import { FileText, Github, Linkedin } from "lucide-react";
+import { Link } from "react-router-dom";
+
 const nav = [
-  { label: "Projects", href: "#projects" },
-  { label: "About", href: "#about" },
-  { label: "Posts", href: "#posts" },
-  { label: "Contact", href: "#contact" },
+  { label: "Home", to: "/" },
+  { label: "About", to: "/about" },
+  { label: "Posts", to: "/posts" },
+  { label: "Projects", to: "/projects" },
 ];
+
 
 export default function Sidebar() {
   return (
@@ -18,18 +22,44 @@ export default function Sidebar() {
           <span className="pill">AWS • Azure • M365</span>
         </div>
 
-        <div className="socialRow">
-          <a href="#" className="social">Resume</a>
-          <a href="#" className="social">GitHub</a>
-          <a href="#" className="social">LinkedIn</a>
-        </div>
+<div className="socialRow left">
+  <a
+    href="/MathewRossResume.pdf"
+    className="socialInline"
+    target="_blank"
+    rel="noreferrer"
+  >
+    <FileText size={14} />
+    <span>Resume</span>
+  </a>
+
+  <a
+    href="https://github.com/Khadren"
+    className="socialInline"
+    target="_blank"
+    rel="noreferrer"
+  >
+    <Github size={14} />
+    <span>GitHub</span>
+  </a>
+
+  <a
+    href="https://www.linkedin.com/in/mathewdross/"
+    className="socialInline"
+    target="_blank"
+    rel="noreferrer"
+  >
+    <Linkedin size={14} />
+    <span>LinkedIn</span>
+  </a>
+</div>
       </div>
 
       <nav className="sideNav">
         {nav.map((n) => (
-          <a key={n.href} href={n.href} className="sideLink">
+          <Link key={n.to} to={n.to} className="sideLink">
             {n.label}
-          </a>
+          </Link>
         ))}
       </nav>
     </div>
