@@ -1,3 +1,25 @@
+import { LuFileText, LuGithub, LuLinkedin, LuMail } from "react-icons/lu";
+import Section from "../components/Section";
+
 export default function Contact() {
-  return <h1>Contact</h1>;
+  return (
+    <Section id="contact" title="Get In Touch">
+      <p>
+        I'm always open to discussing new opportunities, cloud architecture, or just geeking out about tech.
+      </p>
+
+      {/* Links */}
+      <div className="linksRow" style={{ marginBottom: "2rem" }}>
+        <a href="mailto=mathew.d.ross@gmail.com" className="linksbtn" target="_blank" rel="noreferrer">
+          <LuMail size={15} />
+          <span>E-mail</span>
+        </a>
+        <a href="https://www.linkedin.com/in/mathewdross/" className="linksbtn" target="_blank" rel="noreferrer">
+          <LuLinkedin size={15} />
+          <span>LinkedIn</span>
+        </a>
+        </div>
+    </Section>
+  );
 }
+

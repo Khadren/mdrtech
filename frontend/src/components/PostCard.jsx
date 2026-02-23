@@ -17,7 +17,7 @@ export default function PostCard({ post }) {
         {post.date}
       </small>
 
-      <p>{post.excerpt}</p>
+      {post.excerpt && <p>{post.excerpt}</p>}
 
       <p>
         <Link to={`/posts/${post.slug}`}>

@@ -1,17 +1,8 @@
-import { FileText, Github, Linkedin } from "lucide-react";
-import { Link } from "react-router-dom";
+import { LuFileText, LuGithub, LuLinkedin, LuMail } from "react-icons/lu";
 
-const nav = [
-  { label: "Home", to: "/" },
-  { label: "About", to: "/about" },
-  { label: "Posts", to: "/posts" },
-  { label: "Projects", to: "/projects" },
-];
-
-
-export default function Sidebar() {
+export default function Profile() {
   return (
-    <div className="sidebar">
+    <div className="hero">
       <div className="profile">
         <img className="avatar" src="/avatar.png" alt="Profile" />
         <h2 className="name">Mathew Ross</h2>
@@ -29,7 +20,7 @@ export default function Sidebar() {
     target="_blank"
     rel="noreferrer"
   >
-    <FileText size={14} />
+    <LuFileText size={14} />
     <span>Resume</span>
   </a>
 
@@ -39,7 +30,7 @@ export default function Sidebar() {
     target="_blank"
     rel="noreferrer"
   >
-    <Github size={14} />
+    <LuGithub size={14} />
     <span>GitHub</span>
   </a>
 
@@ -49,19 +40,20 @@ export default function Sidebar() {
     target="_blank"
     rel="noreferrer"
   >
-    <Linkedin size={14} />
+    <LuLinkedin size={14} />
     <span>LinkedIn</span>
+  </a>
+  <a
+    href="mailto=mathew.d.ross@gmail.com"
+    className="socialInline"
+    target="_blank"
+    rel="noreferrer"
+  >
+    <LuMail size={14} />
+    <span>E-Mail</span>
   </a>
 </div>
       </div>
-
-      <nav className="sideNav">
-        {nav.map((n) => (
-          <Link key={n.to} to={n.to} className="sideLink">
-            {n.label}
-          </Link>
-        ))}
-      </nav>
     </div>
   );
 }

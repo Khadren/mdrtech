@@ -17,7 +17,7 @@ export default function ProjectCard({ project }) {
         {project.date}
       </small>
 
-      <p>{project.excerpt}</p>
+      {project.excerpt && <p>{project.excerpt}</p>}
 
       <p>
         <Link to={`/projects/${project.slug}`}>

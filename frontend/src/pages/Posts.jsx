@@ -1,5 +1,6 @@
 import { posts } from "../data/posts";
 import PostCard from "../components/PostCard";
+import Section from "../components/Section";
 
 export default function Posts() {
   const sortedPosts = [...posts].sort(
@@ -7,15 +8,10 @@ export default function Posts() {
   );
 
   return (
-    <section className="section">
-      <h1>Posts</h1>
-
+    <Section id="posts" title="Posts">
       {sortedPosts.map((post) => (
-        <PostCard
-          key={post.slug}
-          post={post}
-        />
+        <PostCard key={post.slug} post={post} />
       ))}
-    </section>
+    </Section>
   );
 }
