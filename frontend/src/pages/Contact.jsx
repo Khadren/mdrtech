@@ -10,7 +10,7 @@ export default function Contact() {
 
       {/* Links */}
       <div className="linksRow" style={{ marginBottom: "2rem" }}>
-        <a href="mailto=mathew.d.ross@gmail.com" className="linksbtn" target="_blank" rel="noreferrer">
+        <a href="mailto:mathew.ross@mdrtech.ca" className="linksbtn" target="_blank" rel="noreferrer">
           <LuMail size={15} />
           <span>E-mail</span>
         </a>
