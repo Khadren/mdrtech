@@ -39,7 +39,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::783890452560:role/GitHubActions-MDRTech-FrontendDeploy
+          role-to-assume: arn:aws:iam::783890452560:role/mdrtech-frontend-deploy
           aws-region: ca-central-1
 
       - name: Sync to S3
