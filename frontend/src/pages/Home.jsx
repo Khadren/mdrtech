@@ -3,47 +3,8 @@ import { posts } from "../data/posts";
 import ProjectCard from "../components/ProjectCard";
 import PostCard from "../components/PostCard";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from 'react';
+import VisitorCounter from "../components/VisitorCounter";
 
-const VisitorCounter = () => {
-  const [count, setCount] = useState(null);
-  const [busy, setBusy] = useState(false);
-
-  // read-only on load
-  useEffect(() => {
-    fetch("/api/visit")
-      .then((r) => r.json())
-      .then((d) => setCount(d.count))
-      .catch(console.error);
-  }, []);
-
-  const increment = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      const r = await fetch("/api/visit", { method: "POST" });
-      const d = await r.json();
-      setCount(d.count);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <span
-      role="button"
-      tabIndex={0}
-      onClick={increment}
-      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && increment()}
-      style={{ cursor: busy ? "not-allowed" : "pointer", textDecoration: "underline" }}
-      aria-disabled={busy}
-    >
-      {count === null ? "Checking traffic..." : `Total Visitors: ${count}`}
-    </span>
-  );
-};
-
-// Helper for text previews
 function getPreview(content, count = 2) {
   if (!content) return "";
   const plainText = content
