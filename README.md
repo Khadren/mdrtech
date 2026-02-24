@@ -2,5 +2,4 @@
 
 ## Projects
  - [Frontend](./frontend/README.md)
- - [Backend](./infra/README.md)
- - [Hosting](./infra/frontend/README.md)
+ - [Infra](./infra/README.md)
