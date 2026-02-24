@@ -44,7 +44,7 @@ export default function Profile() {
     <span>LinkedIn</span>
   </a>
   <a
-    href="mailto=mathew.d.ross@gmail.com"
+    href="mailto:mathew.ross@mdrtech.ca"
     className="socialInline"
     target="_blank"
     rel="noreferrer"

@@ -534,7 +534,7 @@ a:hover { color: var(--accent); }
 
   .linksbtn {
     width: auto;
-    min-width: 110px;
+    min-width: 7rem;
     justify-content: center;
   }
 

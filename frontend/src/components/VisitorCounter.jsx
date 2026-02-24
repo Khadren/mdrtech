@@ -52,7 +52,7 @@ export default function VisitorCounter() {
 
   return (
     <span className="muted">
-      {count === null ? "Checking traffic..." : `Total Visitors: ${count}`}
+      {count === null ? "Checking traffic..." : `Visits: ${count}`}
     </span>
   );
 }
