@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 export default function MobileHero() {
   return (
     <div className="mobileHero">
-      <img className="mobileHeroAvatar" src="/avatar.png" alt="Mathew Ross" />
+      <img className="mobileHeroAvatar" src="/avatar.webp" alt="Mathew Ross" />
 
       <div className="mobileHeroInfo">
         <h1 className="mobileHeroName">Mathew Ross</h1>

@@ -4,7 +4,7 @@ export default function Profile() {
   return (
     <div className="hero">
       <div className="profile">
-        <img className="avatar" src="/avatar.png" alt="Profile" />
+        <img className="avatar" src="/avatar.webp" alt="Profile" />
         <h2 className="name">Mathew Ross</h2>
         <p className="role">Systems & Cloud Administrator</p>
 

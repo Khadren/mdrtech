@@ -4,6 +4,7 @@ import ProjectCard from "../components/ProjectCard";
 import PostCard from "../components/PostCard";
 import { Link } from "react-router-dom";
 import VisitorCounter from "../components/VisitorCounter";
+import SEO from "../components/SEO";
 
 function getPreview(content, count = 2) {
   if (!content) return "";
@@ -32,61 +33,70 @@ export default function Home() {
   const previousPosts = sortedPosts.slice(1, 3);
 
   return (
-    <section className="homeGrid">
-      {/* LEFT COLUMN — NEWEST CONTENT */}
-      <div className="homeLeft section">
-        {newestPost && (
-          <article className="newestBlock">
-            <h1>Latest Post</h1>
-            <h2>
-              <Link to={`/posts/${newestPost.slug}`}>{newestPost.title}</Link>
-            </h2>
-            <small>{newestPost.date}</small>
-            {newestPost.summary && <p className="summary">{newestPost.summary}</p>}
-            <p className="preview">{getPreview(newestPost.content, 2)}</p>
-            <p><Link to={`/posts/${newestPost.slug}`}>Read full post →</Link></p>
-          </article>
-        )}
+    <>
+      <SEO
+        title="Cloud Infrastructure & Systems Engineering"
+        description="Enterprise-focused cloud architecture, automation, and infrastructure projects by Mathew Ross (MDR Tech)."
+        url="/"
+      />
 
-        {newestProject && (
-          <article className="newestBlock">
-            <h1>Latest Project</h1>
-            <h2>
-              <Link to={`/projects/${newestProject.slug}`}>{newestProject.title}</Link>
-            </h2>
-            <small>Last updated {newestProject.updated}</small>
-            {newestProject.summary && <p className="summary">{newestProject.summary}</p>}
-            <p className="preview">{getPreview(newestProject.content, 2)}</p>
-            <p><Link to={`/projects/${newestProject.slug}`}>View project →</Link></p>
-          </article>
-        )}
-      </div>
+      <section className="homeGrid">
+        {/* LEFT COLUMN — NEWEST CONTENT */}
+        <div className="homeLeft section">
+          {newestPost && (
+            <article className="newestBlock">
+              <h1>Latest Post</h1>
+              <h2>
+                <Link to={`/posts/${newestPost.slug}`}>{newestPost.title}</Link>
+              </h2>
+              <small>{newestPost.date}</small>
+              {newestPost.summary && <p className="summary">{newestPost.summary}</p>}
+              <p className="preview">{getPreview(newestPost.content, 2)}</p>
+              <p><Link to={`/posts/${newestPost.slug}`}>Read full post →</Link></p>
+            </article>
+          )}
 
-      {/* RIGHT COLUMN — PREVIOUS CONTENT */}
-      <div className="homeRight">
-        <div className="previousRail">
-          <section className="section">
-            <h2>Recent Projects</h2>
-            {previousProjects.map((project) => (
-              <ProjectCard key={project.slug} project={project} />
-            ))}
-            <p><Link to="/projects">All projects →</Link></p>
-          </section>
-
-          <hr />
-
-          <section className="section">
-            <h2>Recent Posts</h2>
-            {previousPosts.map((post) => (
-              <PostCard key={post.slug} post={post} />
-            ))}
-            <p><Link to="/posts">All posts →</Link></p>
-          </section>
+          {newestProject && (
+            <article className="newestBlock">
+              <h1>Latest Project</h1>
+              <h2>
+                <Link to={`/projects/${newestProject.slug}`}>{newestProject.title}</Link>
+              </h2>
+              <small>Last updated {newestProject.updated}</small>
+              {newestProject.summary && <p className="summary">{newestProject.summary}</p>}
+              <p className="preview">{getPreview(newestProject.content, 2)}</p>
+              <p><Link to={`/projects/${newestProject.slug}`}>View project →</Link></p>
+            </article>
+          )}
         </div>
-      </div>
-      <footer className="siteFooter">
-        <VisitorCounter />
-      </footer>
-    </section>
+
+        {/* RIGHT COLUMN — PREVIOUS CONTENT */}
+        <div className="homeRight">
+          <div className="previousRail">
+            <section className="section">
+              <h2>Recent Projects</h2>
+              {previousProjects.map((project) => (
+                <ProjectCard key={project.slug} project={project} />
+              ))}
+              <p><Link to="/projects">All projects →</Link></p>
+            </section>
+
+            <hr />
+
+            <section className="section">
+              <h2>Recent Posts</h2>
+              {previousPosts.map((post) => (
+                <PostCard key={post.slug} post={post} />
+              ))}
+              <p><Link to="/posts">All posts →</Link></p>
+            </section>
+          </div>
+        </div>
+
+        <footer className="siteFooter">
+          <VisitorCounter />
+        </footer>
+      </section>
+    </>
   );
 }
