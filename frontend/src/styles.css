@@ -426,15 +426,13 @@ a:hover { color: var(--accent); }
   max-width: none;    
   margin: 0;           
   padding: 1.75rem 1.75rem 2rem;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: block; 
+  text-align: left;
 }
 
 .postHeader, .projectHeader {
   max-width: none;
-  text-align: center;
+  text-align: left;
 }
 
 .postDivider, .projectDivider {
@@ -444,30 +442,86 @@ a:hover { color: var(--accent); }
 }
 
 .postSectionTitle, .projectSectionTitle {
-  text-align: center;
+  text-align: left;
   margin-top: 1.25rem;
   margin-bottom: 0.75rem;
 }
 
 .postBody, .projectBody {
-  margin-left: 6rem;
-  margin-right: 6rem;
-  text-align: center;
+  margin: 0; 
+  width: 100%;
+  max-width: 100%; 
+  text-align: left;
 }
 
 .postDetail .markdown, .projectDetail .markdown {
-  max-width: none;  
+  max-width: 100%;  
+}
+
+/* Blog typography */
+.prose {
+  width: 100%;
+  max-width: 100%; 
+  margin: 0;               
+  line-height: 1.75;
+  font-size: 1.05rem;
+  text-align: left;
+}
+
+.prose p {
+  margin: 0 0 1.1rem;
+  text-align: left;
+}
+
+.prose ul, .prose ol {
+  display: block;
+  text-align: left; 
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.prose h1, .prose h2, .prose h3 {
+  line-height: 1.2;
+  margin: 2rem 0 0.75rem;
+  text-align: left;
+}
+
+.prose a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.95em;
+  padding: 0.15em 0.35em;
+  border-radius: 6px;
+}
+
+.prose pre {
+  overflow-x: auto;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.prose blockquote {
+  margin: 1.25rem 0;
+  padding-left: 1rem;
+  border-left: 4px solid var(--line);
+  opacity: 0.95;
+  text-align: left;
 }
 
 /* MARKDOWN RULES */
 .markdown {
-  max-width: 52rem;
+  max-width: 100%;
   width: 100%;
-  margin: 0 auto;
-  text-align: center;
+  margin: 0;
+  text-align: left;
 }
-.markdown ul {
-  display: inline-block;
+.markdown ul, .markdown ol {
+  display: block;
   text-align: left;
   margin-bottom: 1rem;
 }
@@ -475,6 +529,7 @@ a:hover { color: var(--accent); }
 .markdown p {
   margin-bottom: 1rem;
   line-height: 1.6;
+  text-align: left;
 }
 
 /* RESPONSIVE */
@@ -485,6 +540,8 @@ a:hover { color: var(--accent); }
     margin-top: 3.5rem;
   }
 
+  /* This will hide your MAIN layout sidebar if you have one, 
+     but the new .postSidebar will gracefully stack below the post */
   .sidebarWrap { 
     display: none; 
   }
@@ -496,8 +553,8 @@ a:hover { color: var(--accent); }
 
   .postBody, 
   .projectBody { 
-    margin-left: 0; 
-    margin-right: 0; 
+    margin: 0 auto;
+    padding: 0; 
   }
 
   .postSectionTitle, 
