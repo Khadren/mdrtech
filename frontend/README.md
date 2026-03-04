@@ -26,7 +26,7 @@ A look into design decisions:
 ---
 
 # Structure
-
+```
 frontend/
 │
 ├── src/
@@ -50,7 +50,7 @@ frontend/
 │ └── sitemap.xml
 │
 └── package.json
-
+```
 ### components
 
 Reusable UI components.
@@ -100,12 +100,12 @@ The site includes a small visitor counter powered by the backend API.
 5. The API returns the current count to the frontend
 
 Example request:
-
+```
 POST /api/visit
 {
 "visitorId": "uuid"
 }
-
+```
 
 The response returns the updated count which is displayed in the UI.
 
@@ -123,9 +123,9 @@ Each page sets:
 - Twitter card metadata
 
 Example:
-
+```
 <SEO title="Home" description="Personal site for cloud and infrastructure projects" />
-
+```
 ---
 
 # Performance
@@ -143,13 +143,13 @@ Several optimizations are implemented:
 # Production Build
 
 To generate the production build:
-
+```
 npm run build
-
+```
 The output is written to:
-
+```
 frontend/dist
-
+```
 These assets are uploaded to the S3 site bucket during deployment.
 
 ---
