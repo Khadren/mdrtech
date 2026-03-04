@@ -15,40 +15,40 @@ export default function VisitorCounter() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const run = async () => {
-      try {
-        const visitorId = getVisitorId();
+    let cancelled = false;
 
-        const r = await fetch("/api/visit", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ visitorId }),
-        });
+    const t = setTimeout(() => {
+      (async () => {
+        try {
+          const visitorId = getVisitorId();
 
-        if (!r.ok) {
-          throw new Error(`API error ${r.status}`);
+          const r = await fetch("/api/visit", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ visitorId }),
+            keepalive: true,
+          });
+
+          if (!r.ok) throw new Error(`API error ${r.status}`);
+
+          const d = await r.json();
+          if (typeof d.count !== "number") throw new Error("Invalid API response");
+
+          if (!cancelled) setCount(d.count);
+        } catch (e) {
+          console.error(e);
+          if (!cancelled) setError("Couldn’t load visitor count.");
         }
+      })();
+    }, 750);
 
-        const d = await r.json();
-
-        // Guard against undefined
-        if (typeof d.count !== "number") {
-          throw new Error("Invalid API response");
-        }
-
-        setCount(d.count);
-      } catch (e) {
-        console.error(e);
-        setError("Couldn’t load visitor count.");
-      }
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
     };
-
-    run();
   }, []);
 
-  if (error) {
-    return <span className="muted">{error}</span>;
-  }
+  if (error) return <span className="muted">{error}</span>;
 
   return (
     <span className="muted">
