@@ -30,25 +30,25 @@ export default function PostDetail() {
     .slice(0, 2);
 
   return (
-    <div className="homeGrid">
+    <div className="contentGrid">
       
       {/* LEFT COLUMN: Main Post Content (Restored the section box) */}
-      <div className="homeLeft">
-        <section className="section postDetail">
-          <header className="postHeader">
-            <h1 className="postTitle">{post.title}</h1>
-            <div className="postMeta">Last updated {updatedText}</div>
+      <div className="contentLeft">
+        <section className="section contentDetail">
+          <header className="contentHeader">
+            <h1 className="contentTitle">{post.title}</h1>
+            <div className="contentMeta">Posted on {updatedText}</div>
           </header>
 
-          <hr className="postDivider" />
+          <hr className="contentDivider" />
 
           {post.summary && (
-            <h2 className="postSectionTitle">
+            <h2 className="contentSectionTitle">
               {post.summary}
             </h2>
           )}
 
-          <div className="postBody prose">
+          <div className="contentBody prose">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {post.content}
             </ReactMarkdown>
@@ -57,7 +57,7 @@ export default function PostDetail() {
       </div>
 
       {/* RIGHT COLUMN: Sidebar matching Home exactly */}
-      <div className="homeRight">
+      <div className="contentRight">
         <div className="previousRail">
           
           <section className="section">

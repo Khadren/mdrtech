@@ -40,16 +40,16 @@ export default function Home() {
         url="/"
       />
 
-      <section className="homeGrid">
+      <section className="contentGrid">
         {/* LEFT COLUMN — NEWEST CONTENT */}
-        <div className="homeLeft section">
+        <div className="contentLeft section">
           {newestPost && (
             <article className="newestBlock">
               <h1>Latest Post</h1>
               <h2>
                 <Link to={`/posts/${newestPost.slug}`}>{newestPost.title}</Link>
               </h2>
-              <small>{newestPost.date}</small>
+              <p className="contentDate">{newestPost.date}</p>
               {newestPost.summary && <p className="summary">{newestPost.summary}</p>}
               <p className="preview">{getPreview(newestPost.content, 2)}</p>
               <p><Link to={`/posts/${newestPost.slug}`}>Read full post →</Link></p>
@@ -62,7 +62,7 @@ export default function Home() {
               <h2>
                 <Link to={`/projects/${newestProject.slug}`}>{newestProject.title}</Link>
               </h2>
-              <small>Last updated {newestProject.updated}</small>
+              <p className="contentDate">{newestPost.date}</p>
               {newestProject.summary && <p className="summary">{newestProject.summary}</p>}
               <p className="preview">{getPreview(newestProject.content, 2)}</p>
               <p><Link to={`/projects/${newestProject.slug}`}>View project →</Link></p>
@@ -71,7 +71,7 @@ export default function Home() {
         </div>
 
         {/* RIGHT COLUMN — PREVIOUS CONTENT */}
-        <div className="homeRight">
+        <div className="contentRight">
           <div className="previousRail">
             <section className="section">
               <h2>Recent Projects</h2>

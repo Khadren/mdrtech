@@ -149,8 +149,8 @@ a:hover { color: var(--accent); }
   width: 4.5rem;
   height: 4.5rem;
   border-radius: 50%;
-  border: 1px solid var(--line);
   object-fit: cover;
+  object-position: cover;
 }
 
 .mobileHeroInfo {
@@ -181,7 +181,15 @@ a:hover { color: var(--accent); }
   width: 100%;
 }
 
-.sectionTitle { margin: 0 0 0.5rem; font-size: 1rem; }
+.sectionTitle { 
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  line-height: 1.1;
+  text-align: center;
+}
+
 .sectionBody { color: var(--text); }
 .subtle { color: var(--muted); }
 
@@ -228,19 +236,8 @@ a:hover { color: var(--accent); }
   padding: 0.75rem 0 1.75rem;
 }
 
-#about .sectionTitle,
-#contact .sectionTitle,
-#posts .sectionTitle,
-#projects .sectionTitle {
-  font-size: 2rem;
-  color: var(--text);
-  margin-bottom: 1.5rem;
-  line-height: 1.1;
-  text-align: center;
-}
-
 /* HOME */
-.homeGrid {
+.contentGrid {
   display: grid;
   grid-template-columns: 2fr 1fr; 
   gap: 1.5rem;
@@ -259,7 +256,7 @@ a:hover { color: var(--accent); }
 }
 .newestBlock h1 { margin-bottom: 0.5rem; }
 .newestBlock h2 { margin-bottom: 0.25rem; }
-.homeRight h2 { margin-top: 2rem; }
+.contentRight h2 { margin-top: 2rem; }
 .previousRail .section { padding: 1.5rem; }
 .previousRail hr { border: none; margin: 2rem 0; }
 
@@ -279,12 +276,11 @@ a:hover { color: var(--accent); }
 }
 
 .avatar {
-  width: 8rem; 
+  width: 8rem;
   height: 8rem;
-  margin-bottom: 1.5rem;
   border-radius: 50%;
-  border: 1px solid var(--line);
   object-fit: cover;
+  object-position: center;
 }
 
 .profile { 
@@ -399,9 +395,27 @@ a:hover { color: var(--accent); }
   padding-top: 1rem;
 }
 
+.bioContainer {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: left;
+  line-height: 1.7;   
+}
+
+.bioContainer h1, 
+.bioContainer h2, 
+.bioContainer h3 {
+  text-align: left;
+  margin-top: 2rem;
+}
+
+.tiny a {
+  font-size: 0.5rem !important;
+  text-decoration: none !important;
+}
+
 /* POSTS & PROJECTS */
-.postCard, .projectCard {
-  margin-bottom: 2rem;
+.contentCard {
   padding-bottom: 1.5rem;
   border-bottom: 1px solid var(--line);
   max-width: 52rem;
@@ -409,19 +423,22 @@ a:hover { color: var(--accent); }
   margin-right: auto;
 }
 
-.postSummary, .projectSummary {
-  color: var(--muted);
-  margin: 0.25rem 0 0.75rem;
+.contentCard h3 {
+  margin-bottom: 0.25rem;
 }
 
-.postDate, .projectDate {
+.contentSummary {
+  margin: 1rem 0 0.75rem;
+  text-align: left;
+}
+
+.contentDate {
+  margin: 0 0 0 0.5rem;
   display: block;
   font-size: 0.85rem;
-  opacity: 0.7;
-  margin-bottom: 0.5rem;
 }
 
-.postDetail, .projectDetail {
+.contentDetail {
   width: 100%;
   max-width: none;    
   margin: 0;           
@@ -430,31 +447,31 @@ a:hover { color: var(--accent); }
   text-align: left;
 }
 
-.postHeader, .projectHeader {
+.contentHeader {
   max-width: none;
   text-align: left;
 }
 
-.postDivider, .projectDivider {
+.contentDivider {
   border: none;
   border-top: 1px solid var(--line);
   margin: 1.5rem 0 1.75rem;
 }
 
-.postSectionTitle, .projectSectionTitle {
+.contentSectionTitle {
   text-align: left;
   margin-top: 1.25rem;
   margin-bottom: 0.75rem;
 }
 
-.postBody, .projectBody {
+.contentBody {
   margin: 0; 
   width: 100%;
   max-width: 100%; 
   text-align: left;
 }
 
-.postDetail .markdown, .projectDetail .markdown {
+.contentDetail .markdown {
   max-width: 100%;  
 }
 
@@ -540,26 +557,13 @@ a:hover { color: var(--accent); }
     margin-top: 3.5rem;
   }
 
-  /* This will hide your MAIN layout sidebar if you have one, 
-     but the new .postSidebar will gracefully stack below the post */
   .sidebarWrap { 
     display: none; 
   }
 
   .grid, 
-  .homeGrid { 
+  .contentGrid { 
     grid-template-columns: 1fr; 
-  }
-
-  .postBody, 
-  .projectBody { 
-    margin: 0 auto;
-    padding: 0; 
-  }
-
-  .postSectionTitle, 
-  .projectSectionTitle { 
-    margin-left: 0; 
   }
 
   .mobileHero { 
@@ -573,7 +577,14 @@ a:hover { color: var(--accent); }
   .section {
     padding: 1.5rem 1rem;
   }
+  .contentBody { 
+    margin: 0 auto;
+    padding: 0; 
+  }
 
+  .contentSectionTitle { 
+    margin-left: 0; 
+  }
   .aboutpillRow, 
   .linksRow {
     flex-wrap: wrap;

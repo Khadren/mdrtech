@@ -5,7 +5,7 @@ export default function Contact() {
   return (
     <Section id="contact" title="Get In Touch">
       <p>
-        I'm always open to discussing new opportunities, cloud architecture, or just geeking out about tech.
+        I'm always open to discussing new opportunities, cloud architecture, or even open if you just want to pick my brain.
       </p>
 
       {/* Links */}

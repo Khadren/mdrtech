@@ -8,10 +8,14 @@ export default function Projects() {
   );
 
   return (
-    <Section id="projects" title="Projects">
-      {sortedProjects.map((project) => (
-        <ProjectCard key={project.slug} project={project} />
-      ))}
-    </Section>
+    <section id="posts" className="section">
+      <h3 className="sectionTitle">Posts</h3>
+      <div className="sectionBody">
+        {sortedProjects.map((project) => (
+          <ProjectCard key={project.slug} project={project} />
+        ))}
+      </div>
+    </section>
   );
 }
+
