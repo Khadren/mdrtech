@@ -1,0 +1,9 @@
+title = "mdrtech gitleaks config"
+
+[extend]
+useDefault = true
+
+# Example allowlist (only add if you get false positives)
+# [[allowlist]]
+# description = "Ignore example/test keys"
+# regexes = ['''AKIA[0-9A-Z]{16}''']
