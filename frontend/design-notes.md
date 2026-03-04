@@ -51,6 +51,8 @@ Other considerations:
 - Expand the Home page with latest projects/posts
 - Maintain consistent formatting across posts and projects
 - Create placeholders for projects and posts to maintain layout consistency
+- Utilize Markdown on Posts and Projects
+- ScrollToTop component
 
 ---
 

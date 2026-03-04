@@ -100,12 +100,12 @@ The site includes a small visitor counter powered by the backend API.
 5. The API returns the current count to the frontend
 
 Example request:
-```
+`
 POST /api/visit
 {
 "visitorId": "uuid"
 }
-```
+`
 
 The response returns the updated count which is displayed in the UI.
 
@@ -123,9 +123,9 @@ Each page sets:
 - Twitter card metadata
 
 Example:
-```
+`
 <SEO title="Home" description="Personal site for cloud and infrastructure projects" />
-```
+`
 ---
 
 # Performance
@@ -140,16 +140,39 @@ Several optimizations are implemented:
 
 ---
 
+# Scroll Position Fix
+
+## Issue
+
+Posts and Projects pages display additional recent content in sidebar sections. On mobile layouts these sections stack at the bottom of the page.
+
+When a user clicked a post or project link from this area, React Router preserved the current scroll position. This could leave the user midway down the newly loaded page, making it appear as though navigation had not occurred.
+
+## Solution
+
+Implemented a scroll reset on route changes.
+
+- Created ScrollToTop.jsx
+- Uses useLocation() to detect route changes
+- Calls window.scrollTo(0, 0) on navigation
+- Mounted globally in Layout.jsx
+
+## Result
+
+Navigation now resets the viewport to the top of the page, ensuring post and project content is immediately visible after route changes.
+
+---
+
 # Production Build
 
 To generate the production build:
-```
+`
 npm run build
-```
+`
 The output is written to:
-```
+`
 frontend/dist
-```
+`
 These assets are uploaded to the S3 site bucket during deployment.
 
 ---

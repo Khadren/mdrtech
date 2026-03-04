@@ -35,7 +35,7 @@ export default function Home() {
   return (
     <>
       <SEO
-        title="Cloud Infrastructure & Systems Engineering"
+        title="MDR Technology Solutions"
         description="Enterprise-focused cloud architecture, automation, and infrastructure projects by Mathew Ross (MDR Tech)."
         url="/"
       />
