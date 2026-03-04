@@ -106,7 +106,7 @@ The visitor counter demonstrates a minimal backend architecture.
 Terraform variables are provided through local `.tfvars` files or environment variables.
 
 Example:
-
+```
 cp example.tfvars terraform.tfvars
-
+```
 Edit the file with environment-specific values before running Terraform.
