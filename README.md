@@ -59,7 +59,7 @@ More detailed documentation can be found in:
 
 ## Diagram
 
-User
+```User
  │
  ▼
 CloudFront (CDN)
@@ -73,6 +73,7 @@ CloudFront (CDN)
       │
       ▼
    DynamoDB
+```
 
 CloudFront acts as the entry point for both static content and API traffic.
 
@@ -80,7 +81,7 @@ CloudFront acts as the entry point for both static content and API traffic.
 
 # Repository Structure
 
-mdrtech/
+```mdrtech/
 │
 ├── frontend/
 │   ├── src/
@@ -100,7 +101,7 @@ mdrtech/
 │   └── architecture.md
 │
 └── README.md
-
+```
 
 ### frontend
 
