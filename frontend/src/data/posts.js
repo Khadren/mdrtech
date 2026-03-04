@@ -33,9 +33,9 @@ WHAT THE FUCK?
 
 Actually think more Lisa_Breaks_Ralphs_Heart.gif. 
 
-Like, you reached out to me about talking more about my experience, and then a day later, no ‘let's not talk to that man, seems a silly sort.’ 
+Like, you reached out to me about talking more about my experience, and then a day later, ‘No let's not talk to that man, seems a silly sort.’ 
 
-Which *gestures at all this* I get! But also, "fuck you".
+Which *\gestures at all this\* I get! But also, "fuck you".
 
 I just, I think I gave up a little bit on myself for a week there. I mean, I definitely tried to jump back into it, but I knew my focus was shot. Since then, I've had some interesting screening interviews and some good interviews, and working on this site has been a boon. And I know this should be a place for tooting my own horn... which I just realized can sound oddly masturbatory, which is something else I probably shouldn't say? 
 
