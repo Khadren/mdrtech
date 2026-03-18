@@ -73,19 +73,108 @@ export const projects = [
 
   My current goal is to plan out that same infrastructure, re-calculate costs, document everything and if costs aren't too crazy commit to a short test.
 
+  ### Basic Axway Architecture
+
+    ## OUTBOUND
+
+    User
+      │
+      ▼
+    Nasuni Share
+      │
+      ▼
+    Axway (Azure VM)
+      │
+      ▼
+    AS2 Transfer
+      │
+      ▼
+    Trading Partner
+
+    ## INBOUND
+
+    Trading Partner
+      │
+      ▼
+    AS2 Transfer
+      │
+      ▼
+    Axway (Azure VM)
+      │
+      ▼
+    Decrypt / Verify
+      │
+      ▼
+    Nasuni Share
+      │
+      ▼
+    User / Application
+
+  ### Azure Architecture (Best guess from memory)
+
+    1. Ingress
+      - Public IP Address
+      - Public Load Balancer
+
+    2. Network & Security
+      - VNet (Would remain/Not factored into costs)
+      - Subnet (Would remain/Not factored into costs)
+      - NSG (I believe there was one attached to the VM)
+      - Azure Firewall / NVA (Uncertain of this area, but would remain/Not factored into costs)
+
+    3. Compute
+      - VM
+      - Managed Disks
+
+    4. Egress
+      - Nasuni, could be accessed on-prem or in cloud, either way not factored into costs
+
   ### Architecture Goals
 
-  - Replace legacy MFT platform
+  - Replace legacy Axway platform (See above)
   - Maintain secure partner file exchange
-  - Integrate with enterprise storage
+  - Maintain intergration with enterprise storage
   - Provide monitoring and alerting
 
   ### Planned Architecture
 
-  Partner → AWS Transfer (AS2)
-  → S3 landing buckets
-  → Lambda processing
-  → Enterprise storage integration
+      ## INBOUND
+
+    Trading Partner
+      │
+      ▼
+    AWS Transfer (AS2)
+      │
+      ▼
+    S3 landing bucket
+      │
+      ▼
+    Lambda or Datasync
+      │
+      ▼
+    Nasuni Share
+      │
+      ▼
+    User / Application
+
+    ## OUTBOUND
+
+    User
+      │
+      ▼
+    Nasuni Share
+      │
+      ▼
+    Lambda or Datasync
+      │
+      ▼
+    S3 landing bucket
+      │
+      ▼  
+    AWS Transfer (AS2)
+      │
+      ▼
+    Trading Partner
 
   Outbound and inbound file flows are separated to simplify routing and error handling.
 
