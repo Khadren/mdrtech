@@ -1,6 +1,6 @@
 import { projects } from "../data/projects";
 import ProjectCard from "../components/ProjectCard";
-import Section from "../components/Section";
+import SEO from "../components/SEO";
 
 export default function Projects() {
   const sortedProjects = [...projects].sort(
@@ -8,14 +8,21 @@ export default function Projects() {
   );
 
   return (
-    <section id="posts" className="section">
-      <h3 className="sectionTitle">Posts</h3>
-      <div className="sectionBody">
-        {sortedProjects.map((project) => (
-          <ProjectCard key={project.slug} project={project} />
-        ))}
-      </div>
-    </section>
+    <>
+      <SEO
+        title="Projects"
+        description="Selected IT and cloud infrastructure projects by Mathew Ross — AWS, Terraform, identity, and managed file transfer work."
+        url="/projects"
+      />
+      <section id="projects" className="section">
+        <h1 className="sectionTitle">Projects</h1>
+        <div className="sectionBody">
+          {sortedProjects.map((project) => (
+            <ProjectCard key={project.slug} project={project} />
+          ))}
+        </div>
+      </section>
+    </>
   );
 }
 

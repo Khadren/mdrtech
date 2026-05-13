@@ -8,11 +8,14 @@ import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import NotFound from "./components/NotFound";
+import RouteError from "./components/RouteError";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
+    errorElement: <Layout><RouteError /></Layout>,
     children: [
       { index: true, element: <Home /> },
       { path: "posts", element: <Posts />},
@@ -20,7 +23,8 @@ const router = createBrowserRouter([
       { path: "projects", element: <Projects /> },
       { path: "projects/:slug", element: <ProjectDetail /> },
       { path: "about", element: <About /> },
-      { path: "contact", element: <Contact /> }
+      { path: "contact", element: <Contact /> },
+      { path: "*", element: <NotFound /> }
     ]
   }
 ]);

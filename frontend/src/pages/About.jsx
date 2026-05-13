@@ -2,10 +2,11 @@ import { LuFileText, LuGithub, LuLinkedin } from "react-icons/lu";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import SEO from "../components/SEO";
 
 export default function About() {
   const bioTitle = `
-# Hey There I'm Matt!
+## Hey There I'm Matt!
 <small>(Actually this is just text on a browser, but you get the idea.)</small>
 `
   const bioContent = `
@@ -37,9 +38,14 @@ Or not. Or do. I don’t know, I’m not your mother.
 `
   return (
     <div className="pageContent">
+      <SEO
+        title="About"
+        description="About Mathew Ross — a Toronto-based systems and cloud administrator with 15+ years in enterprise IT, identity, and infrastructure."
+        url="/about"
+      />
       {/* Manually implementing the Section structure */}
       <section id="about" className="section">
-        <h3 className="sectionTitle">About Me</h3>
+        <h1 className="sectionTitle">About Me</h1>
         
         <div className="sectionBody">
           {/* Skills & Location Pills */}

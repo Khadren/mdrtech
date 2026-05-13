@@ -3,7 +3,7 @@ import { posts } from "../data/posts";
 import ProjectCard from "../components/ProjectCard";
 import PostCard from "../components/PostCard";
 import { Link } from "react-router-dom";
-import VisitorCounter from "../components/VisitorCounter";
+import Hero from "../components/Hero";
 import SEO from "../components/SEO";
 
 function getPreview(content, count = 2) {
@@ -40,15 +40,17 @@ export default function Home() {
         url="/"
       />
 
+      <Hero />
+
       <section className="contentGrid">
         {/* LEFT COLUMN — NEWEST CONTENT */}
         <div className="contentLeft section">
           {newestPost && (
             <article className="newestBlock">
-              <h1>Latest Post</h1>
-              <h2>
+              <h2>Latest Post</h2>
+              <h3>
                 <Link to={`/posts/${newestPost.slug}`}>{newestPost.title}</Link>
-              </h2>
+              </h3>
               <p className="contentDate">{newestPost.date}</p>
               {newestPost.summary && <p className="summary">{newestPost.summary}</p>}
               <p className="preview">{getPreview(newestPost.content, 2)}</p>
@@ -58,11 +60,11 @@ export default function Home() {
 
           {newestProject && (
             <article className="newestBlock">
-              <h1>Latest Project</h1>
-              <h2>
+              <h2>Latest Project</h2>
+              <h3>
                 <Link to={`/projects/${newestProject.slug}`}>{newestProject.title}</Link>
-              </h2>
-              <p className="contentDate">{newestPost.date}</p>
+              </h3>
+              <p className="contentDate">{newestProject.date}</p>
               {newestProject.summary && <p className="summary">{newestProject.summary}</p>}
               <p className="preview">{getPreview(newestProject.content, 2)}</p>
               <p><Link to={`/projects/${newestProject.slug}`}>View project →</Link></p>
@@ -92,10 +94,6 @@ export default function Home() {
             </section>
           </div>
         </div>
-
-        <footer className="siteFooter">
-          <VisitorCounter />
-        </footer>
       </section>
     </>
   );

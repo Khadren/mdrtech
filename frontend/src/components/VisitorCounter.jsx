@@ -37,7 +37,7 @@ export default function VisitorCounter() {
           if (!cancelled) setCount(d.count);
         } catch (e) {
           console.error(e);
-          if (!cancelled) setError("Couldn’t load visitor count.");
+          if (!cancelled) setError("Couldn't load visitor count.");
         }
       })();
     }, 750);
@@ -48,11 +48,11 @@ export default function VisitorCounter() {
     };
   }, []);
 
-  if (error) return <span className="muted">{error}</span>;
+  if (error) return <span className="visitorCount" title={error}>—</span>;
 
   return (
-    <span className="muted">
-      {count === null ? "Checking traffic..." : `Visits: ${count}`}
+    <span className="visitorCount">
+      {count === null ? "—" : `${count.toLocaleString()} visits`}
     </span>
   );
 }

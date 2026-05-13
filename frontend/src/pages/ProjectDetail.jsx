@@ -4,13 +4,14 @@ import { posts } from "../data/posts";
 import { projects } from "../data/projects";
 import PostCard from "../components/PostCard";
 import ProjectCard from "../components/ProjectCard";
+import SEO from "../components/SEO";
 import remarkGfm from "remark-gfm";
 
 export default function ProjectDetail() {
   const { slug } = useParams();
   const project = projects.find((p) => p.slug === slug);
 
-  if (!project) return <p>Project not found.</p>;
+  if (!project) throw new Response("Project not found", { status: 404 });
 
   const updatedText = project.updated || project.date;
   
@@ -31,7 +32,11 @@ export default function ProjectDetail() {
 
   return (
     <div className="contentGrid">
-
+      <SEO
+        title={project.title}
+        description={project.summary || `${project.title} — a project by Mathew Ross on MDR Tech.`}
+        url={`/projects/${project.slug}`}
+      />
       {/* LEFT COLUMN: Main Project Content*/}
       <div className="contentLeft">
         <section className="section contentDetail">
@@ -43,9 +48,9 @@ export default function ProjectDetail() {
           <hr className="contentDivider" />
 
           {project.summary && (
-            <h2 className="contentSectionTitle">
+            <p className="contentLede">
               {project.summary}
-            </h2>
+            </p>
           )}
 
           <div className="contentBody prose">

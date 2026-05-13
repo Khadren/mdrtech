@@ -4,13 +4,14 @@ import { posts } from "../data/posts";
 import { projects } from "../data/projects";
 import PostCard from "../components/PostCard";
 import ProjectCard from "../components/ProjectCard";
+import SEO from "../components/SEO";
 import remarkGfm from "remark-gfm";
 
 export default function PostDetail() {
   const { slug } = useParams();
   const post = posts.find((p) => p.slug === slug);
 
-  if (!post) return <p>Post not found.</p>;
+  if (!post) throw new Response("Post not found", { status: 404 });
 
   const updatedText = post.updated || post.date;
 
@@ -31,7 +32,11 @@ export default function PostDetail() {
 
   return (
     <div className="contentGrid">
-      
+      <SEO
+        title={post.title}
+        description={post.summary || `${post.title} — a post by Mathew Ross on MDR Tech.`}
+        url={`/posts/${post.slug}`}
+      />
       {/* LEFT COLUMN: Main Post Content (Restored the section box) */}
       <div className="contentLeft">
         <section className="section contentDetail">
@@ -43,9 +48,9 @@ export default function PostDetail() {
           <hr className="contentDivider" />
 
           {post.summary && (
-            <h2 className="contentSectionTitle">
+            <p className="contentLede">
               {post.summary}
-            </h2>
+            </p>
           )}
 
           <div className="contentBody prose">
