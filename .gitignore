@@ -41,3 +41,5 @@ terraform.rc
 node_modules/
 dist/
 build/
+
+design-review.md
