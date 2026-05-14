@@ -19,18 +19,25 @@ function getPreview(content, count = 2) {
 }
 
 export default function Home() {
-  const sortedProjects = [...projects].sort((a, b) => {
-    const aDate = new Date(a.updated || a.date);
-    const bDate = new Date(b.updated || b.date);
-    return bDate - aDate;
-  });
+  // Posts: chronological — newest first.
+  const sortedPosts = [...posts].sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  );
 
-  const sortedPosts = [...posts].sort((a, b) => new Date(b.date) - new Date(a.date));
+  // Projects: the loader already sorts featured-first, then alphabetical.
+  // If you've flagged anything as `featured: true`, those float to the top
+  // and feed the Home rail. If nothing's flagged, we fall back to the full
+  // alphabetical list so the page still has content.
+  const featured = projects.filter((p) => p.featured);
+  const displayProjects = featured.length ? featured : projects;
 
-  const newestProject = sortedProjects[0];
-  const previousProjects = sortedProjects.slice(1, 3);
+  const newestProject = displayProjects[0];
+  const previousProjects = displayProjects.slice(1, 3);
   const newestPost = sortedPosts[0];
   const previousPosts = sortedPosts.slice(1, 3);
+
+  const projectRailLabel = featured.length ? "Featured Projects" : "Projects";
+  const projectHeroLabel = featured.length ? "Featured Project" : "Project";
 
   return (
     <>
@@ -43,7 +50,7 @@ export default function Home() {
       <Hero />
 
       <section className="contentGrid">
-        {/* LEFT COLUMN — NEWEST CONTENT */}
+        {/* LEFT COLUMN — NEWEST POST + FEATURED PROJECT */}
         <div className="contentLeft section">
           {newestPost && (
             <article className="newestBlock">
@@ -60,11 +67,10 @@ export default function Home() {
 
           {newestProject && (
             <article className="newestBlock">
-              <h2>Latest Project</h2>
+              <h2>{projectHeroLabel}</h2>
               <h3>
                 <Link to={`/projects/${newestProject.slug}`}>{newestProject.title}</Link>
               </h3>
-              <p className="contentDate">{newestProject.date}</p>
               {newestProject.summary && <p className="summary">{newestProject.summary}</p>}
               <p className="preview">{getPreview(newestProject.content, 2)}</p>
               <p><Link to={`/projects/${newestProject.slug}`}>View project →</Link></p>
@@ -72,11 +78,11 @@ export default function Home() {
           )}
         </div>
 
-        {/* RIGHT COLUMN — PREVIOUS CONTENT */}
+        {/* RIGHT COLUMN — RAILS */}
         <div className="contentRight">
           <div className="previousRail">
             <section className="section">
-              <h2>Recent Projects</h2>
+              <h2>{projectRailLabel}</h2>
               {previousProjects.map((project) => (
                 <ProjectCard key={project.slug} project={project} />
               ))}

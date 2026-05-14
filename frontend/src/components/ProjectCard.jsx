@@ -8,10 +8,6 @@ export default function ProjectCard({ project }) {
           {project.title}
         </Link>
       </h3>
-      
-      <p className="contentDate">
-        {project.date}
-      </p>
 
       <p className="contentSummary">
         {project.summary}
