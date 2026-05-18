@@ -25,9 +25,9 @@ Infrastructure
 - ACM TLS certificates
 
 Backend
-- API Gateway
+- API Gateway (HTTP API)
 - Lambda
-- DynamoDB
+- SNS (visit notifications)
 
 ### Infrastructure as Code
 
@@ -38,9 +38,9 @@ The project includes:
 - CloudFront distributions
 - S3 hosting buckets
 - IAM roles and policies
-- DynamoDB tables
 - Lambda functions
-- CloudWatch alarms
+- SNS topics
+- CloudWatch alarms and dashboard
 
 ### CI/CD
 

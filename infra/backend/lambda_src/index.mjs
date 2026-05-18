@@ -1,12 +1,8 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import {
-  DynamoDBDocumentClient,
-  GetCommand,
-  PutCommand,
-  UpdateCommand,
-} from "@aws-sdk/lib-dynamodb";
+import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 
-const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const sns = new SNSClient({});
+
+const TOPIC_ARN = process.env.VISIT_TOPIC_ARN;
 
 function json(statusCode, body) {
   return {
@@ -16,89 +12,78 @@ function json(statusCode, body) {
   };
 }
 
-export const handler = async (event) => {
-  const visitsTable = process.env.VISITS_TABLE;
-  const seenTable = process.env.SEEN_TABLE;
-  const pk = process.env.COUNTER_KEY || "site";
-  const ttlSeconds = Number(process.env.TTL_SECONDS || "86400");
+// API Gateway v2 lowercases header names. CloudFront stamps these viewer
+// headers onto the origin request when the origin request policy forwards
+// CloudFront-* headers (Managed-AllViewerAndCloudFrontHeaders-2022-06).
+function pickGeo(headers = {}) {
+  const country = headers["cloudfront-viewer-country"] || null;
+  const countryName = headers["cloudfront-viewer-country-name"] || null;
+  const region = headers["cloudfront-viewer-country-region"] || null;
+  const regionName = headers["cloudfront-viewer-country-region-name"] || null;
+  const city = headers["cloudfront-viewer-city"] || null;
+  const timeZone = headers["cloudfront-viewer-time-zone"] || null;
 
+  return { country, countryName, region, regionName, city, timeZone };
+}
+
+function formatLocation({ city, regionName, region, countryName, country }) {
+  const parts = [
+    city,
+    regionName || region,
+    countryName || country,
+  ].filter(Boolean);
+  return parts.length ? parts.join(", ") : "Unknown location";
+}
+
+export const handler = async (event) => {
   const method =
     event?.requestContext?.http?.method ||
     event?.requestContext?.httpMethod ||
     "GET";
 
+  // Lightweight liveness response for accidental GETs (browsers, monitors).
   if (method === "GET") {
-    const resp = await ddb.send(
-      new GetCommand({
-        TableName: visitsTable,
-        Key: { pk },
-      })
-    );
-    const count = resp?.Item?.count ?? 0;
-    return json(200, { count });
+    return json(200, { ok: true });
   }
 
-  if (method === "POST") {
-    let visitorId = null;
-    try {
-      visitorId = event?.body ? JSON.parse(event.body)?.visitorId : null;
-    } catch {
-      visitorId = null;
-    }
-
-    if (!visitorId || typeof visitorId !== "string" || visitorId.length > 200) {
-      return json(400, { message: "Missing or invalid visitorId" });
-    }
-
-    const now = Math.floor(Date.now() / 1000);
-    const seenPk = "VISITOR#" + visitorId;
-
-    let isNew = false;
-
-    try {
-      await ddb.send(
-        new PutCommand({
-          TableName: seenTable,
-          Item: {
-            pk: seenPk,
-            expiresAt: now + ttlSeconds,
-          },
-          ConditionExpression: "attribute_not_exists(pk)",
-        })
-      );
-      isNew = true;
-    } catch (err) {
-      if (err?.name !== "ConditionalCheckFailedException") {
-        console.error("Seen PutItem failed:", err);
-        return json(500, { message: "Server error" });
-      }
-    }
-
-    if (isNew) {
-      const upd = await ddb.send(
-        new UpdateCommand({
-          TableName: visitsTable,
-          Key: { pk },
-          UpdateExpression: "SET #c = if_not_exists(#c, :zero) + :one",
-          ExpressionAttributeNames: { "#c": "count" },
-          ExpressionAttributeValues: { ":one": 1, ":zero": 0 },
-          ReturnValues: "UPDATED_NEW",
-        })
-      );
-
-      const count = upd?.Attributes?.count ?? 0;
-      return json(200, { count, unique: true });
-    }
-
-    const resp = await ddb.send(
-      new GetCommand({
-        TableName: visitsTable,
-        Key: { pk },
-      })
-    );
-    const count = resp?.Item?.count ?? 0;
-    return json(200, { count, unique: false });
+  if (method !== "POST") {
+    return json(405, { message: "Method Not Allowed" });
   }
 
-  return json(405, { message: "Method Not Allowed" });
+  // Best-effort notification. Never block the response on SNS errors.
+  try {
+    const geo = pickGeo(event?.headers);
+    const location = formatLocation(geo);
+    const when = new Date().toISOString();
+
+    const subject = `mdrtech.ca visit: ${location}`.slice(0, 100);
+
+    const message = [
+      `New visit to mdrtech.ca`,
+      ``,
+      `Location: ${location}`,
+      `Time:     ${when}`,
+      ``,
+      `(Approximate location derived from CloudFront viewer headers.`,
+      ` No IP, no identifiers, no per-visitor records stored.)`,
+    ].join("\n");
+
+    if (!TOPIC_ARN) {
+      console.warn("VISIT_TOPIC_ARN not set — skipping notification");
+    } else {
+      await sns.send(
+        new PublishCommand({
+          TopicArn: TOPIC_ARN,
+          Subject: subject,
+          Message: message,
+        })
+      );
+    }
+  } catch (err) {
+    // Visit notifications are best-effort. Log only the error name so the
+    // failure mode is observable without leaking any header or message data.
+    console.warn("visit-notify publish failed:", err?.name || "unknown");
+  }
+
+  return json(200, { ok: true });
 };

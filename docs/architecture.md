@@ -6,13 +6,13 @@ Deeper architectural notes for [mdrtech.ca](https://www.mdrtech.ca). The top-lev
 
 ## Overview
 
-The site is a serverless, fully managed AWS deployment of a small React single-page application with one lightweight HTTP API (visitor counter). Every piece is defined as Terraform and deployed through GitHub Actions using OIDC — there are no long-lived AWS credentials anywhere in the repo or in CI.
+The site is a serverless, fully managed AWS deployment of a small React single-page application with one lightweight HTTP API (visit notifier). Every piece is defined as Terraform and deployed through GitHub Actions using OIDC — there are no long-lived AWS credentials anywhere in the repo or in CI.
 
 The system has three logical tiers:
 
-1. **Edge / CDN** — CloudFront fronts both static content and API traffic, terminating TLS and applying response-header policies.
+1. **Edge / CDN** — CloudFront fronts both static content and API traffic, terminating TLS, applying response-header policies, and stamping requests with viewer-geo headers for the API path.
 2. **Static site** — A React/Vite build served from a private S3 bucket. CloudFront reaches it via Origin Access Control (OAC).
-3. **Dynamic API** — API Gateway (HTTP API) → Lambda → DynamoDB for the visitor counter.
+3. **Dynamic API** — API Gateway (HTTP API) → Lambda → SNS for visit notifications. No persistent storage in the request path.
 
 ```
 ┌─────────────────┐
@@ -23,6 +23,7 @@ The system has three logical tiers:
 ┌─────────────────────────────────────────────┐
 │              CloudFront (CDN)                │
 │  + Response Headers Policy (HSTS, X-Frame…) │
+│  + CloudFront-Viewer-* headers on /api/*    │
 └──────┬─────────────────────────┬────────────┘
        │                         │
        │ /*                      │ /api/*
@@ -35,13 +36,13 @@ The system has three logical tiers:
                                  ▼
                         ┌────────────────────┐
                         │   Lambda           │
-                        │   visit-counter    │
+                        │   visit-notify     │
                         └────────┬───────────┘
-                                 │
+                                 │ Publish
                                  ▼
                         ┌────────────────────┐
-                        │   DynamoDB         │
-                        │   visits + seen    │
+                        │   SNS (visits)     │
+                        │   → email          │
                         └────────────────────┘
 ```
 
@@ -59,18 +60,16 @@ CloudFront is the single public entry point. Direct S3 access is blocked at the 
 4. The React bundle hydrates and the React Router takes over client-side navigation. Subsequent route changes (`/projects`, `/posts/...`) are handled in-browser without further requests.
 5. CloudFront's "default root object" + a custom error response for `403/404 → /index.html` keep deep-link reloads working (so refreshing on `/projects/foo` doesn't 404).
 
-### API call (visitor counter)
+### API call (visit notification)
 
-1. On mount, `VisitorCounter` reads or generates a UUID in `localStorage`.
-2. The component POSTs the UUID to `/api/visit` (same origin → CloudFront).
-3. CloudFront forwards `/api/*` to the API Gateway origin.
-4. API Gateway invokes the Lambda function.
-5. Lambda checks the `seen` DynamoDB table for the UUID:
-   - If new, it `PutItem`s the UUID and atomically `UpdateItem`s the counter in the `visits` table.
-   - If seen, it just returns the current count.
-6. Lambda returns the count as JSON. The component renders it.
+1. On app mount, `Layout` fires a single `POST /api/visit` — fire-and-forget, no body, no identifiers, no client storage.
+2. CloudFront forwards `/api/*` to the API Gateway origin using the `Managed-AllViewerAndCloudFrontHeaders-2022-06` origin request policy, which stamps the request with `CloudFront-Viewer-Country`, `CloudFront-Viewer-City`, `CloudFront-Viewer-Country-Region`, `CloudFront-Viewer-Time-Zone`, and related geo headers.
+3. API Gateway invokes the Lambda function.
+4. Lambda reads the viewer headers, formats a short message ("New visit to mdrtech.ca · Location: …"), and publishes to the dedicated `visits` SNS topic.
+5. SNS delivers the notification by email.
+6. Lambda returns `{ ok: true }`. The client ignores the response.
 
-The browser stores the UUID so re-visits from the same device aren't counted. This is a deliberately weak "unique visitor" definition — it's a fun stat, not analytics. There's no PII captured.
+Data minimization is the point of this design. There is no DynamoDB, no per-visitor record anywhere, no IP address in any application data path, no cookies or localStorage on the visitor's device, and no third-party scripts. API Gateway access logs intentionally omit the source IP and retain for 3 days. The site exposes a privacy notice in the footer modal describing exactly this.
 
 ---
 
@@ -100,14 +99,14 @@ The browser stores the UUID so re-visits from the same device aren't counted. Th
 
 ### Backend / API (`infra/backend/`)
 
-- **API Gateway HTTP API**: cheaper and simpler than REST API; CORS handled by the gateway, logs to CloudWatch.
-- **Lambda**: Node.js handler, packaged from `infra/backend/build/`. IAM role scoped to `GetItem`/`UpdateItem` on the visits table and `PutItem` on the seen table — that's it.
-- **DynamoDB tables**:
-  - `mdrtech-site-visits` — a single counter item, hash key `pk` (string).
-  - `mdrtech-visitor-seen` — one item per visitor UUID. Point-in-time recovery enabled.
-  - Both tables use on-demand (PAY_PER_REQUEST) billing.
-- **CloudWatch alarms** on Lambda errors and API Gateway 5XX responses.
-- **Log groups** with 14-day retention.
+- **API Gateway HTTP API**: cheaper and simpler than REST API; CORS handled by the gateway, logs to CloudWatch. Access log format intentionally omits source IP.
+- **Lambda**: Node.js handler, packaged from `infra/backend/build/`. IAM role scoped to `sns:Publish` on the visits topic only — no DynamoDB, no S3, no broader perms.
+- **SNS topics**:
+  - `mdrtech-visits` — visit notifications, with an email subscription.
+  - `mdrtech-alerts` — operational alarms, with the same email subscription. Kept separate so visit pings never get mistaken for incidents.
+- **CloudWatch alarms** on Lambda errors, throttles, p95 duration, and API Gateway 5XX responses. All set `treat_missing_data = "notBreaching"` so quiet periods stay OK instead of cycling through INSUFFICIENT_DATA.
+- **CloudWatch dashboard** with Lambda, API Gateway, and SNS publish metrics.
+- **Log groups** with 3-day retention.
 
 ### Global (`infra/global/`)
 
@@ -148,9 +147,11 @@ The alternative was long-lived `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` Git
 
 Full control over caching policies, response-header policies, error responses, logging, and OAC. Amplify/Netlify abstract those away. The trade-off is more infrastructure to define — which is the whole point of the exercise.
 
-### Why DynamoDB instead of RDS / Aurora
+### Why SNS-only instead of a database-backed counter
 
-A relational database is overkill for two-key lookups. DynamoDB on-demand has no idle cost and scales to zero traffic, which matters for a portfolio site that mostly idles. The counter logic is naturally key/value.
+The site previously persisted unique-visitor records and an aggregate count in DynamoDB. That was a tidy demonstration of a serverless key/value pattern, but it meant the site was storing a persistent identifier (a `localStorage` UUID) on every visitor's device and an IP-derived record in API Gateway access logs. Both qualify as personal data under GDPR, UK GDPR, CCPA, and PIPEDA. The dedup table also pulled the design into ePrivacy / PECR consent territory because of the device-side identifier.
+
+Replacing the database with an SNS publish removes everything that needs to be stored or consented to. The site no longer keeps any per-visitor record, the visitor's device gets nothing written to it, and the only personal data leaving the request scope is an approximate location inside an email I receive. That is a fairer trade for a personal portfolio than a stat in a footer.
 
 ### Why Terraform instead of CDK or CloudFormation
 
@@ -173,7 +174,7 @@ Documented in `infra/README.md`; summary of what's in place:
 - S3 Block Public Access on all buckets.
 - CloudFront Origin Access Control (OAC) — bucket policy only allows the distribution.
 - ACM-issued TLS with HSTS enforced via response-header policy.
-- IAM scoped per service to specific resources (Lambda touches exactly two tables, no `*`).
+- IAM scoped per service to specific resources (Lambda has `sns:Publish` on exactly one topic, no `*`).
 - GitHub OIDC federation for CI, no static credentials.
 - Gitleaks pre-commit scanning configured in `.gitleaks.toml`.
 - CloudFront access logs + Lambda + API Gateway logs to CloudWatch with retention.
@@ -198,4 +199,4 @@ Pulled from the top-level README plus what's emerged from the review in `fronten
 
 ---
 
-_Last updated: 2026-05-12._
+_Last updated: 2026-05-17._

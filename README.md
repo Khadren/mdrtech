@@ -42,7 +42,7 @@ It demonstrates practical experience with:
 
 - **Frontend:** React (Vite), React Router
 - **Hosting / CDN:** S3, CloudFront, Route 53, ACM
-- **Backend:** API Gateway (HTTP API), Lambda, DynamoDB
+- **Backend:** API Gateway (HTTP API), Lambda, SNS
 - **CI/CD:** GitHub Actions (OIDC)
 - **IaC:** Terraform
 
@@ -73,7 +73,7 @@ CloudFront (CDN)
     Lambda
       │
       ▼
-   DynamoDB
+    SNS → email
 ```
 
 CloudFront acts as the entry point for both static content and API traffic.
@@ -117,7 +117,7 @@ Terraform infrastructure organized into logical stacks.
 |------|------|
 | global | Shared resources (Route53, ACM certificates) |
 | frontend | CloudFront distribution and S3 hosting |
-| backend | API Gateway, Lambda functions, DynamoDB |
+| backend | API Gateway, Lambda functions, SNS notifications |
 
 ---
 
@@ -125,7 +125,7 @@ Terraform infrastructure organized into logical stacks.
 
 CloudFront was chosen over Amplify or Netlify to provide full control of caching policies, security headers, and infrastructure automation through Terraform.
 
-DynamoDB was used instead of a relational database since the visitor counter requires simple key/value lookups and benefits from DynamoDB's serverless scaling model.
+The visit-notification backend uses Lambda publishing to SNS with no persistent storage. An earlier iteration kept a DynamoDB visitor counter, but the redesign removes per-visitor records and device-side identifiers in favour of a smaller personal-data footprint. See `docs/architecture.md` for the rationale.
 
 Terraform was chosen as the IaC tool to keep infrastructure definitions version controlled and reproducible across environments.
 

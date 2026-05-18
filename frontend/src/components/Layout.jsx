@@ -1,7 +1,8 @@
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "./Header";
 import ScrollToTop from "./ScrollToTop";
-import VisitorCounter from "./VisitorCounter";
+import PrivacyModal from "./PrivacyModal";
 
 // `children` is rendered when Layout is used as an `errorElement` wrapper
 // (where there's no nested route to fill the Outlet). For normal routing,
@@ -9,6 +10,22 @@ import VisitorCounter from "./VisitorCounter";
 // content — Layout just provides the chrome.
 export default function Layout({ children }) {
   const year = new Date().getFullYear();
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+
+  // Fire a silent visit ping once per app load. The endpoint reads the
+  // CloudFront geo headers server-side and sends a notification email.
+  // No body, no identifiers, no return value used.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        fetch("/api/visit", { method: "POST", keepalive: true }).catch(() => {});
+      } catch {
+        /* ignore — best-effort notification only */
+      }
+    }, 750);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <div className="page">
       <Header />
@@ -25,8 +42,16 @@ export default function Layout({ children }) {
             Source
           </a>
         </span>
-        <VisitorCounter />
+        <button
+          type="button"
+          className="footerLinkBtn"
+          onClick={() => setPrivacyOpen(true)}
+        >
+          Privacy
+        </button>
       </footer>
+
+      <PrivacyModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} />
     </div>
   );
 }

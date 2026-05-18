@@ -2,24 +2,21 @@
 # Locals
 ############################################
 locals {
-  name         = var.project_name
-  lambda_name  = "${var.project_name}-visit-counter"
-  apigw_name   = "${var.project_name}-http-api"
-
-  visit_table_name = coalesce(var.visit_table_name, "${var.project_name}-site-visits")
-  seen_table_name  = coalesce(var.seen_table_name,  "${var.project_name}-visitor-seen")
+  name        = var.project_name
+  lambda_name = "${var.project_name}-visit-notify"
+  apigw_name  = "${var.project_name}-http-api"
 }
 ############################################
 # Log groups
 ############################################
 resource "aws_cloudwatch_log_group" "apigw" {
   name              = "/aws/apigw/${local.apigw_name}"
-  retention_in_days = 14
+  retention_in_days = 3
 }
 
 resource "aws_cloudwatch_log_group" "lambda" {
   name              = "/aws/lambda/${local.lambda_name}"
-  retention_in_days = 14
+  retention_in_days = 3
 }
 ############################################
 # IAM
@@ -42,13 +39,8 @@ data "aws_iam_policy_document" "lambda_assume" {
 
 data "aws_iam_policy_document" "lambda_policy" {
   statement {
-    actions   = ["dynamodb:GetItem", "dynamodb:UpdateItem"]
-    resources = [aws_dynamodb_table.visits.arn]
-  }
-
-  statement {
-    actions   = ["dynamodb:PutItem"]
-    resources = [aws_dynamodb_table.seen.arn]
+    actions   = ["sns:Publish"]
+    resources = [aws_sns_topic.visits.arn]
   }
 
   statement {
@@ -65,43 +57,6 @@ resource "aws_iam_role_policy" "lambda_inline" {
   policy = data.aws_iam_policy_document.lambda_policy.json
 }
 ############################################
-# DynamoDB
-############################################
-resource "aws_dynamodb_table" "visits" {
-  name         = local.visit_table_name
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "pk"
-
-  attribute {
-    name = "pk"
-    type = "S"
-  }
-
-  point_in_time_recovery {
-    enabled = true
-  }
-}
-
-resource "aws_dynamodb_table" "seen" {
-  name         = local.seen_table_name
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "pk"
-
-  attribute {
-    name = "pk"
-    type = "S"
-  }
-
-  ttl {
-    attribute_name = "expiresAt"
-    enabled        = true
-  }
-
-  point_in_time_recovery {
-    enabled = true
-  }
-}
-############################################
 # Lambda
 ############################################
 resource "aws_lambda_function" "visit" {
@@ -114,17 +69,14 @@ resource "aws_lambda_function" "visit" {
   filename         = "${path.module}/build/lambda.zip"
   source_code_hash = filebase64sha256("${path.module}/build/lambda.zip")
 
-  architectures = ["arm64"]
-  memory_size  = 512
-  timeout      = 5
+  architectures                  = ["arm64"]
+  memory_size                    = 256
+  timeout                        = 5
   reserved_concurrent_executions = 10
 
   environment {
     variables = {
-      VISITS_TABLE = aws_dynamodb_table.visits.name
-      SEEN_TABLE   = aws_dynamodb_table.seen.name
-      COUNTER_KEY  = var.counter_key
-      TTL_SECONDS  = "86400"
+      VISIT_TOPIC_ARN = aws_sns_topic.visits.arn
     }
   }
 }
@@ -167,16 +119,18 @@ resource "aws_apigatewayv2_stage" "default" {
   name        = "$default"
   auto_deploy = true
 
+  # Access log format intentionally omits source IP. Visit notifications
+  # are handled by the Lambda; access logs are kept short and minimal for
+  # debugging only.
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.apigw.arn
     format = jsonencode({
-      requestId  = "$context.requestId"
-      ip         = "$context.identity.sourceIp"
-      requestTime= "$context.requestTime"
-      httpMethod = "$context.httpMethod"
-      routeKey   = "$context.routeKey"
-      status     = "$context.status"
-      protocol   = "$context.protocol"
+      requestId      = "$context.requestId"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      routeKey       = "$context.routeKey"
+      status         = "$context.status"
+      protocol       = "$context.protocol"
       responseLength = "$context.responseLength"
       errorMessage   = "$context.error.message"
     })
@@ -191,56 +145,39 @@ resource "aws_lambda_permission" "allow_apigw" {
   source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }
 ############################################
-# SNS Topic
+# SNS Topics
 ############################################
+# Operational alarms — pages me when something is broken.
 resource "aws_sns_topic" "alerts" {
   name = "${local.name}-alerts"
 }
 
-resource "aws_sns_topic_subscription" "email" {
+resource "aws_sns_topic_subscription" "alerts_email" {
+  count     = var.alert_email == null ? 0 : 1
   topic_arn = aws_sns_topic.alerts.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
+# Visit notifications — emails me when someone hits the site, with the
+# CloudFront-derived approximate location. Separate topic so visit pings
+# never get mixed up with real operational alerts.
+resource "aws_sns_topic" "visits" {
+  name = "${local.name}-visits"
+}
+
+resource "aws_sns_topic_subscription" "visits_email" {
+  count     = var.alert_email == null ? 0 : 1
+  topic_arn = aws_sns_topic.visits.arn
   protocol  = "email"
   endpoint  = var.alert_email
 }
 ############################################
 # Alarms
 ############################################
-#DynamoDB Throttles
-resource "aws_cloudwatch_metric_alarm" "ddb_visits_throttles" {
-  alarm_name          = "${local.name}-ddb-visits-throttles"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "ThrottledRequests"
-  namespace           = "AWS/DynamoDB"
-  period              = 60
-  statistic           = "Sum"
-  threshold           = 0
-
-  dimensions = {
-    TableName = aws_dynamodb_table.visits.name
-  }
-
-  alarm_actions = [aws_sns_topic.alerts.arn]
-}
-
-resource "aws_cloudwatch_metric_alarm" "ddb_seen_throttles" {
-  alarm_name          = "${local.name}-ddb-seen-throttles"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  metric_name         = "ThrottledRequests"
-  namespace           = "AWS/DynamoDB"
-  period              = 60
-  statistic           = "Sum"
-  threshold           = 0
-
-  dimensions = {
-    TableName = aws_dynamodb_table.seen.name
-  }
-
-  alarm_actions = [aws_sns_topic.alerts.arn]
-}
-
-#Lambda Errors
+# Lambda Errors
+# notBreaching keeps quiet periods OK instead of INSUFFICIENT_DATA, so
+# we don't get spurious "back to OK" emails every time traffic resumes.
 resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
   alarm_name          = "${local.name}-lambda-errors"
   comparison_operator = "GreaterThanThreshold"
@@ -250,16 +187,16 @@ resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
   period              = 60
   statistic           = "Sum"
   threshold           = 0
+  treat_missing_data  = "notBreaching"
 
   dimensions = {
     FunctionName = aws_lambda_function.visit.function_name
   }
 
   alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
 }
 
-#Lambda Throttles
+# Lambda Throttles
 resource "aws_cloudwatch_metric_alarm" "lambda_throttles" {
   alarm_name          = "${local.name}-lambda-throttles"
   comparison_operator = "GreaterThanThreshold"
@@ -269,6 +206,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_throttles" {
   period              = 60
   statistic           = "Sum"
   threshold           = 0
+  treat_missing_data  = "notBreaching"
 
   dimensions = {
     FunctionName = aws_lambda_function.visit.function_name
@@ -277,7 +215,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_throttles" {
   alarm_actions = [aws_sns_topic.alerts.arn]
 }
 
-#Lambda Duration
+# Lambda Duration
 resource "aws_cloudwatch_metric_alarm" "lambda_duration_p95" {
   alarm_name          = "${local.name}-lambda-duration-p95"
   comparison_operator = "GreaterThanThreshold"
@@ -287,6 +225,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_duration_p95" {
   period              = 60
   extended_statistic  = "p95"
   threshold           = 1000 # ms
+  treat_missing_data  = "notBreaching"
 
   dimensions = {
     FunctionName = aws_lambda_function.visit.function_name
@@ -399,41 +338,22 @@ resource "aws_cloudwatch_dashboard" "ops" {
       },
 
       # ----------------------------
-      # DynamoDB
+      # SNS (visit notifications & alerts)
       # ----------------------------
       {
         type   = "metric"
         x      = 0
         y      = 12
-        width  = 12
+        width  = 24
         height = 6
         properties = {
-          title  = "DynamoDB - ThrottledRequests"
+          title  = "SNS - Messages Published"
           region = var.region
           stat   = "Sum"
-          period = 60
+          period = 300
           metrics = [
-            ["AWS/DynamoDB", "ThrottledRequests", "TableName", aws_dynamodb_table.visits.name],
-            ["AWS/DynamoDB", "ThrottledRequests", "TableName", aws_dynamodb_table.seen.name]
-          ]
-        }
-      },
-      {
-        type   = "metric"
-        x      = 12
-        y      = 12
-        width  = 12
-        height = 6
-        properties = {
-          title  = "DynamoDB - Consumed Capacity (On-Demand signal)"
-          region = var.region
-          stat   = "Sum"
-          period = 60
-          metrics = [
-            ["AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", aws_dynamodb_table.visits.name],
-            [".", "ConsumedWriteCapacityUnits", ".", "."],
-            ["AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", aws_dynamodb_table.seen.name],
-            [".", "ConsumedWriteCapacityUnits", ".", "."]
+            ["AWS/SNS", "NumberOfMessagesPublished", "TopicName", aws_sns_topic.visits.name],
+            [".", ".", ".", aws_sns_topic.alerts.name]
           ]
         }
       }

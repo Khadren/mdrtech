@@ -12,26 +12,6 @@ variable "region" {
   description = "AWS region for backend resources"
 }
 ############################################
-# DynamoDB Tables
-############################################
-variable "visit_table_name" {
-  type        = string
-  description = "DynamoDB table for visit counts"
-  default     = null
-}
-
-variable "seen_table_name" {
-  type        = string
-  description = "DynamoDB table for visits seen"
-  default     = null
-}
-
-variable "counter_key" {
-  type        = string
-  description = "Partition key value for the singleton counter item"
-  default     = "site"
-}
-############################################
 # API Configuration
 ############################################
 variable "cors_allow_origins" {
@@ -43,11 +23,11 @@ variable "cors_allow_origins" {
   ]
 }
 ############################################
-# Alerting
+# Alerting & Notifications
 ############################################
 variable "alert_email" {
   type        = string
-  description = "Email for alarm notifications"
+  description = "Email for alarm notifications and visit notifications"
   default     = null
 
   validation {

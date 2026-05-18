@@ -11,9 +11,9 @@ Major resources provisioned include:
 - ACM TLS certificate
 - API Gateway (HTTP API)
 - Lambda functions
-- DynamoDB tables
+- SNS topics (operational alerts and visit notifications)
 - IAM roles and policies
-- CloudWatch alarms
+- CloudWatch alarms and dashboard
 - CloudFront logging bucket
 
 ---
@@ -84,20 +84,31 @@ CloudWatch alarms for:
 
 ---
 
-# Visitor Counter
+# Visit Notifications
 
-The visitor counter demonstrates a minimal backend architecture.
+A small, low-overhead backend that sends an email when someone visits the
+site, with an approximate location derived from CloudFront viewer headers.
 
 ## Flow
 
-1. Browser generates a unique visitor ID stored in `localStorage`
-2. Client sends visitor ID to `/api/visit`
-3. Lambda:
-   - checks if visitor ID already exists
-   - increments the counter for new visitors
-4. DynamoDB stores:
-   - visitor records
-   - total visit count
+1. Browser fires a single `POST /api/visit` on page load. No body, no identifiers.
+2. CloudFront forwards the request to API Gateway, stamping it with
+   `CloudFront-Viewer-Country`, `CloudFront-Viewer-City`, and related
+   geo headers via the `AllViewerAndCloudFrontHeaders` origin request policy.
+3. Lambda reads the geo headers from the request and publishes a short
+   notification message to a dedicated SNS topic.
+4. SNS emails the notification.
+
+## Data minimization
+
+- No DynamoDB. No persistent visitor records anywhere.
+- No IP addresses in any application data path.
+- No identifiers stored on the visitor's device (no cookies, no localStorage).
+- API Gateway access logs omit the source IP and retain for 3 days.
+- Only country/region/city derived from CloudFront leaves the request scope,
+  inside the notification email.
+
+A privacy notice describing exactly this is exposed in the site footer.
 
 ---
 

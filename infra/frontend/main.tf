@@ -37,6 +37,13 @@ data "aws_cloudfront_origin_request_policy" "all_viewer_except_host_header" {
   name = "Managed-AllViewerExceptHostHeader"
 }
 
+# Forwards viewer headers PLUS CloudFront-added headers (CloudFront-Viewer-City,
+# -Country, -Country-Region, -Time-Zone, etc.). Used by the /api/* behavior so
+# the visit-notify Lambda can read approximate geo without an external lookup.
+data "aws_cloudfront_origin_request_policy" "all_viewer_and_cf_headers" {
+  name = "Managed-AllViewerAndCloudFrontHeaders-2022-06"
+}
+
 ############################################
 # IAM
 ############################################
@@ -347,7 +354,7 @@ resource "aws_cloudfront_distribution" "cdn" {
     compress = true
 
     cache_policy_id            = data.aws_cloudfront_cache_policy.caching_disabled.id
-    origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all_viewer_except_host_header.id
+    origin_request_policy_id   = data.aws_cloudfront_origin_request_policy.all_viewer_and_cf_headers.id
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 

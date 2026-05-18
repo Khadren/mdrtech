@@ -4,7 +4,7 @@ This directory contains the React frontend for the MDR Tech site.
 
 The application is built with **React and Vite** and delivered as static assets through **S3 and CloudFront**.
 
-The frontend acts primarily as a static portfolio site, with a small API integration used to record visitor counts.
+The frontend acts primarily as a static portfolio site, with a small API integration used to send a visit notification to the site owner.
 
 ---
 
@@ -32,7 +32,7 @@ frontend/
 ├── src/
 │ ├── components/
 │ │ ├── Header.jsx
-│ │ ├── VisitorCounter.jsx
+│ │ ├── PrivacyModal.jsx
 │ │ └── SEO.jsx
 │ │
 │ ├── pages/
@@ -60,7 +60,7 @@ Examples:
 | Component | Purpose |
 |------|------|
 | `Header` | Navigation and site branding |
-| `VisitorCounter` | Displays visitor count from backend API |
+| `PrivacyModal` | Footer-linked privacy notice describing exactly what the visit ping does |
 | `SEO` | Injects page metadata for search engines and social previews |
 
 ---
@@ -87,27 +87,25 @@ These are bundled and fingerprinted by Vite during the production build.
 
 ---
 
-# Visitor Counter
+# Visit Notification
 
-The site includes a small visitor counter powered by the backend API.
+The site sends a small notification to the site owner when a page is loaded.
 
 ### Flow
 
-1. The browser generates a unique visitor ID stored in `localStorage`
-2. The frontend sends the ID to the `/api/visit` endpoint
-3. Lambda validates and increments the visitor count
-4. DynamoDB stores visitor and counter data
-5. The API returns the current count to the frontend
+1. On app mount, `Layout` fires a single `POST /api/visit` (fire-and-forget, no body)
+2. CloudFront stamps the request with viewer geo headers and forwards it to API Gateway
+3. Lambda reads the geo headers and publishes a short message to SNS
+4. SNS emails the notification
+
+No identifiers are stored on the visitor's device. No per-visitor records are stored anywhere. A privacy notice describing this is exposed in the footer modal.
 
 Example request:
 `
 POST /api/visit
-{
-"visitorId": "uuid"
-}
 `
 
-The response returns the updated count which is displayed in the UI.
+The response is an empty `{ ok: true }` and is ignored by the client.
 
 ---
 
@@ -136,7 +134,7 @@ Several optimizations are implemented:
 - Hashed assets for long-term caching
 - CloudFront CDN delivery
 - Brotli and gzip compression
-- Lazy visitor counter API call to avoid blocking initial render
+- Lazy visit-notification API call to avoid blocking initial render
 
 ---
 
